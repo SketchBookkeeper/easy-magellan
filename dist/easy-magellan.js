@@ -71,7 +71,7 @@ require = (function (modules, cache, entry) {
 
   // Override the current require with this new one
   return newRequire;
-})({4:[function(require,module,exports) {
+})({5:[function(require,module,exports) {
 "use strict";
 
 Object.defineProperty(exports, "__esModule", {
@@ -158,6 +158,62 @@ function removeClassFromAll(items, className) {
 		items[i].classList.remove(className);
 	}
 }
+},{}],4:[function(require,module,exports) {
+'use strict';
+
+Object.defineProperty(exports, "__esModule", {
+	value: true
+});
+/**
+ * ScrollTo
+ *
+ * @param {String} linkSelector CSS class of links to watch for animated scroll
+ * @returns null
+ */
+var ScrollTo = exports.ScrollTo = function (linkSelector) {
+	var BuildScrollTo = function BuildScrollTo(linkSelector) {
+		var publicAPIs = {};
+
+		var animateScrollTo = function animateScrollTo(destination) {
+			var destinationToScrollTo = destination.offsetTop;
+
+			if ('scrollTo' in window === false) {
+				window.scroll(0, destinationToScrollTo);
+				return;
+			}
+
+			window.scrollTo({
+				'behavior': 'smooth',
+				'top': destinationToScrollTo
+			});
+		};
+
+		var runAnimateScrollTo = function runAnimateScrollTo() {
+			if (!event.target.matches(linkSelector)) return;
+			event.preventDefault();
+
+			var contentID = String(event.target.getAttribute('href'));
+			contentID = contentID.replace('#', '');
+
+			var content = document.getElementById(contentID);
+			if (!content) return;
+
+			animateScrollTo(content);
+		};
+
+		publicAPIs.init = function (linkSelector) {
+			document.addEventListener('click', function () {
+				runAnimateScrollTo();
+			}, false);
+		};
+
+		publicAPIs.init(linkSelector);
+
+		return publicAPIs;
+	};
+
+	return BuildScrollTo;
+}(window, document);
 },{}],3:[function(require,module,exports) {
 'use strict';
 
@@ -168,70 +224,40 @@ exports.Magellan = undefined;
 
 var _utils = require('./utils');
 
+var _scrollTo = require('./scrollTo');
+
 function _toConsumableArray(arr) { if (Array.isArray(arr)) { for (var i = 0, arr2 = Array(arr.length); i < arr.length; i++) { arr2[i] = arr[i]; } return arr2; } else { return Array.from(arr); } } //--------------------------------------------------------------
 // MAGELLAN NAV
 //--------------------------------------------------------------
 
-//------------------------------
-// Animated Scroll To
-//------------------------------
-function animateScrollTo(destination) {
-	var destinationToScrollTo = typeof destination === 'number' ? destination : destination.offsetTop;
 
-	if ('scrollTo' in window === false) {
-		window.scroll(0, destinationToScrollTo);
-		return;
-	}
-
-	window.scrollTo({
-		'behavior': 'smooth',
-		'top': destinationToScrollTo
-	});
-}
-
-function runAnimateScrollTo() {
-	if (!event.target.classList.contains('js-magellan-link')) return;
-	event.preventDefault();
-
-	var contentID = String(event.target.getAttribute('href'));
-	contentID = contentID.replace('#', '');
-
-	var content = document.getElementById(contentID);
-
-	var optionalArgument = parseInt(event.target.dataset.magellanScrollTo);
-	if (optionalArgument !== null && optionalArgument >= 0) {
-		animateScrollTo(optionalArgument);
-		return;
-	}
-
-	if (!content) return;
-
-	animateScrollTo(content);
-}
-
-document.addEventListener('click', runAnimateScrollTo, false);
-
-//------------------------------
-// Magellan
-//------------------------------
+/**
+ * Magellan
+ *
+ * @param {String} contentSelector CSS class for Magellan content blocks
+ * @param {String} linkSelector CSS class for Magellan links
+ * @param {Function} onComplete
+ * @param {Object} options
+ * @returns null
+ */
 var Magellan = exports.Magellan = function (contentSelector, linkSelector, options) {
 	var defaults = {
-		activeLinkClass: 'is-active'
+		activeLinkClass: 'is-active',
+		onEnterViewport: function onEnterViewport(content) {}
 
 		// Constructor
 	};var BuildMagellan = function BuildMagellan(contentSelector, linkSelector, options) {
 		var publicAPIs = {};
 		var settings = void 0;
 
-		// Private Methods
 		var runMagellan = function runMagellan(contents) {
 
 			function createObserver(element) {
-				var options = {
+				var observerOptions = {
 					threshold: 1
 				};
 
-				var observer = new IntersectionObserver(handleIntersect, options);
+				var observer = new IntersectionObserver(handleIntersect, observerOptions);
 
 				observer.observe(element);
 			}
@@ -239,9 +265,13 @@ var Magellan = exports.Magellan = function (contentSelector, linkSelector, optio
 			function handleIntersect(entries, observer) {
 				entries.forEach(function (entry) {
 					if (entry.isIntersecting) {
+						var content = entry.target;
+
 						publicAPIs.deactivateAllLinks();
-						var activeItem = determineActiveContent(contents);
-						activateContentsLink(activeItem);
+						activateContentsLink(content);
+
+						// Callback
+						settings.onEnterViewport(content);
 					}
 				});
 			}
@@ -249,18 +279,6 @@ var Magellan = exports.Magellan = function (contentSelector, linkSelector, optio
 			contents.map(function (content) {
 				createObserver(content);
 			});
-		};
-
-		var determineActiveContent = function determineActiveContent(contents) {
-			var windowTop = window.scrollY;
-
-			for (var i = 0; i < contents.length; i++) {
-				if (contents[i].offsetTop >= windowTop) {
-					return contents[i];
-				}
-			}
-
-			return false;
 		};
 
 		var activateContentsLink = function activateContentsLink(content) {
@@ -290,6 +308,8 @@ var Magellan = exports.Magellan = function (contentSelector, linkSelector, optio
 			window.addEventListener('load', function () {
 				runMagellan(contents);
 			});
+
+			var handleClicks = new _scrollTo.ScrollTo(linkSelector);
 		};
 
 		publicAPIs.init(options);
@@ -299,13 +319,13 @@ var Magellan = exports.Magellan = function (contentSelector, linkSelector, optio
 
 	return BuildMagellan;
 }(window, document);
-},{"./utils":4}],2:[function(require,module,exports) {
+},{"./utils":5,"./scrollTo":4}],2:[function(require,module,exports) {
 'use strict';
 
 var _magellan = require('./src/magellan.js');
 
 window.Magellan = _magellan.Magellan;
-},{"./src/magellan.js":3}],5:[function(require,module,exports) {
+},{"./src/magellan.js":3}],14:[function(require,module,exports) {
 
 var global = (1, eval)('this');
 var OldModule = module.bundle.Module;
@@ -327,7 +347,7 @@ var parent = module.bundle.parent;
 if ((!parent || !parent.isParcelRequire) && typeof WebSocket !== 'undefined') {
   var hostname = '' || location.hostname;
   var protocol = location.protocol === 'https:' ? 'wss' : 'ws';
-  var ws = new WebSocket(protocol + '://' + hostname + ':' + '60369' + '/');
+  var ws = new WebSocket(protocol + '://' + hostname + ':' + '60053' + '/');
   ws.onmessage = function (event) {
     var data = JSON.parse(event.data);
 
@@ -428,5 +448,5 @@ function hmrAccept(bundle, id) {
     return hmrAccept(global.require, id);
   });
 }
-},{}]},{},[5,2])
+},{}]},{},[14,2])
 //# sourceMappingURL=/dist/easy-magellan.map
