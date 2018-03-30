@@ -2,9 +2,7 @@
   "name": "easy-magellan",
   "version": "1.0.0",
   "description": "",
-  "main": "index.js",
-  "scripts": {
-  },
+  "scripts": {},
   "repository": {
     "type": "git",
     "url": "git+https://github.com/SketchBookkeeper/easy-magellan.git"
@@ -16,7 +14,10 @@
   },
   "homepage": "https://github.com/SketchBookkeeper/easy-magellan#readme",
   "dev-dependencies": {
-	"eslint": "^4.19.1",
-	"parcel-bundler": "^1.6.2"
+    "eslint": "^4.19.1",
+    "parcel-bundler": "^1.6.2"
+  },
+  "dependencies": {
+    "intersection-observer": "^0.5.0"
   }
 }
