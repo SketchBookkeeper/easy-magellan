@@ -16,6 +16,9 @@ import {ScrollTo} from './scrollTo';
 export const Magellan = (function(contentSelector, linkSelector, options) {
 	let defaults = {
 		activeLinkClass: 'is-active',
+		rootMargin: '0px',
+		root: null,
+		threshold: 1,
 		onEnterViewport: function(content) {},
 	}
 
@@ -28,7 +31,9 @@ export const Magellan = (function(contentSelector, linkSelector, options) {
 
 			function createObserver(element) {
 				const observerOptions = {
-					threshold: 1,
+					root: settings.root,
+					rootMargin: settings.rootMargin,
+					threshold: settings.threshold,
 				}
 
 				const observer = new IntersectionObserver(handleIntersect, observerOptions);
@@ -39,12 +44,13 @@ export const Magellan = (function(contentSelector, linkSelector, options) {
 			function handleIntersect(entries, observer) {
 				entries.forEach(entry => {
 					if (entry.isIntersecting) {
-						const content = entry.target;
+						const content = determineActiveContent(contents);
+
+						if (!content) return;
 
 						publicAPIs.deactivateAllLinks();
 						activateContentsLink(content);
 
-						// Callback
 						settings.onEnterViewport(content);
 					}
 				});
@@ -53,6 +59,18 @@ export const Magellan = (function(contentSelector, linkSelector, options) {
 			contents.map(content => {
 				createObserver(content);
 			});
+		}
+
+		const determineActiveContent = function(contents) {
+			const windowTop = window.scrollY;
+
+			for (let i = 0; i < contents.length; i++) {
+				if (contents[i].offsetTop >= windowTop) {
+					return contents[i];
+				}
+			}
+
+			return false;
 		}
 
 		const activateContentsLink = function(content) {
@@ -69,11 +87,14 @@ export const Magellan = (function(contentSelector, linkSelector, options) {
 			removeClassFromAll(links, settings.activeLinkClass);
 		}
 
-		publicAPIs.destroy = function() {
+		publicAPIs.contentSelector = contentSelector; // Make option available for reinit
 
+		publicAPIs.reinit = function() {
+			const contents = [...document.querySelectorAll(publicAPIs.contentSelector)];
+			runMagellan(contents);
 		}
 
-		publicAPIs.init = function(options) {
+		publicAPIs.init = function(contentSelector, linkSelector, options) {
 			settings = extend(defaults, options || {});
 
 			const contents = [...document.querySelectorAll(contentSelector)];
@@ -88,7 +109,7 @@ export const Magellan = (function(contentSelector, linkSelector, options) {
 			const handleClicks = new ScrollTo(linkSelector);
 		}
 
-		publicAPIs.init(options);
+		publicAPIs.init(contentSelector,linkSelector, options);
 
 		return publicAPIs;
 	}
