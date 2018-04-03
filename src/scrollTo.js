@@ -1,3 +1,5 @@
+import {updateHash} from './utils';
+
 /**
  * ScrollTo
  *
@@ -26,13 +28,12 @@ export const ScrollTo = (function(linkSelector) {
 			if (!event.target.matches(linkSelector)) return;
 			event.preventDefault();
 
-			let contentID = String(event.target.getAttribute('href'));
-			contentID = contentID.replace('#', '');
-
-			let content = document.getElementById(contentID);
+			const contentID = String(event.target.getAttribute('href'));
+			const content = document.querySelector(contentID);
 			if(!content) return;
 
 			animateScrollTo(content);
+			updateHash(contentID);
 		}
 
 		publicAPIs.init = function(linkSelector) {

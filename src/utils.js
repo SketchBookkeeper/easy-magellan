@@ -28,6 +28,7 @@ export function debounce(func, wait = 20, immediate = true) {
 
 /**
  * Merge Two Objects
+ * TODO attribution to Chris
  */
 export function extend() {
 	let extended = {};
@@ -76,4 +77,18 @@ export function removeClassFromAll(items, className) {
 	for (let i = 0; i < items.length; i++) {
 		items[i].classList.remove(className);
 	}
+}
+
+/**
+* Update Hash without jumping to target
+*/
+export function updateHash(hash) {
+	if (typeof hash !== 'string') return;
+
+	if(!history.pushState) {
+		location.hash = hash;
+		return;
+	}
+
+	history.pushState(null, null, hash);
 }

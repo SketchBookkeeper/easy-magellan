@@ -1,7 +1,7 @@
 //--------------------------------------------------------------
 // MAGELLAN NAV
 //--------------------------------------------------------------
-import {extend, removeClassFromAll} from './utils';
+import {extend, removeClassFromAll, updateHash} from './utils';
 import {ScrollTo} from './scrollTo';
 
 /**
@@ -16,10 +16,10 @@ import {ScrollTo} from './scrollTo';
 export const Magellan = (function(contentSelector, linkSelector, options) {
 	let defaults = {
 		activeLinkClass: 'is-active',
-		rootMargin: '0px',
+		updateHashOnScroll: true,
+		rootMargin: '0px', //TODO group observer options in object
 		root: null,
 		threshold: 1,
-		onEnterViewport: function(content) {},
 	}
 
 	// Constructor
@@ -29,6 +29,7 @@ export const Magellan = (function(contentSelector, linkSelector, options) {
 
 		const runMagellan = function(contents) {
 
+			// TODO separate this out
 			function createObserver(element) {
 				const observerOptions = {
 					root: settings.root,
@@ -51,7 +52,9 @@ export const Magellan = (function(contentSelector, linkSelector, options) {
 						publicAPIs.deactivateAllLinks();
 						activateContentsLink(content);
 
-						settings.onEnterViewport(content);
+						if (settings.updateHashOnScroll && 'id' in content === true) {
+							updateHash(`#${content.id}`);
+						}
 					}
 				});
 			}
