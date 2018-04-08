@@ -24,7 +24,7 @@ export const ScrollTo = (function(linkSelector) {
 			});
 		}
 
-		const runAnimateScrollTo = function() {
+		const runAnimateScrollTo = function(event) {
 			if (!event.target.matches(linkSelector)) return;
 			event.preventDefault();
 
@@ -37,9 +37,11 @@ export const ScrollTo = (function(linkSelector) {
 		}
 
 		publicAPIs.init = function(linkSelector) {
-			document.addEventListener('click', () => {
-				runAnimateScrollTo();
-			}, false);
+			document.addEventListener('click', runAnimateScrollTo, false);
+		}
+
+		publicAPIs.destroy = function() {
+			document.removeEventListener('click', runAnimateScrollTo);
 		}
 
 		publicAPIs.init(linkSelector);
