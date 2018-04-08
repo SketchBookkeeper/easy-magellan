@@ -16,10 +16,14 @@ import {ScrollTo} from './scrollTo';
 export const Magellan = (function(contentSelector, linkSelector, options) {
 	let defaults = {
 		activeLinkClass: 'is-active',
+		threshold: 50,
 		updateHashOnScroll: true,
-		rootMargin: '0px', //TODO group observer options in object
-		root: null,
-		threshold: 1,
+		animateScroll: true,
+		intersectionObserverOptions : {
+			rootMargin: '0px',
+			root: null,
+			threshold: 1,
+		},
 	}
 
 	// Constructor
@@ -28,57 +32,52 @@ export const Magellan = (function(contentSelector, linkSelector, options) {
 		let settings;
 
 		const runMagellan = function(contents) {
+			createObserver(contents);
+		}
 
-			// TODO separate this out
-			function createObserver(element) {
-				const observerOptions = {
-					root: settings.root,
-					rootMargin: settings.rootMargin,
-					threshold: settings.threshold,
-				}
-
-				const observer = new IntersectionObserver(handleIntersect, observerOptions);
-
-				observer.observe(element);
+		function createObserver(contents) {
+			const observerOptions = {
+				root: settings.intersectionObserverOptions.root,
+				rootMargin: settings.intersectionObserverOptions.rootMargin,
+				threshold: settings.intersectionObserverOptions.threshold,
 			}
 
-			function handleIntersect(entries, observer) {
-				entries.forEach(entry => {
-					if (entry.isIntersecting) {
-						const content = determineActiveContent(contents);
-
-						if (!content) return;
-
-						publicAPIs.deactivateAllLinks();
-						activateContentsLink(content);
-
-						if (settings.updateHashOnScroll && 'id' in content === true) {
-							updateHash(`#${content.id}`);
-						}
-					}
-				});
-			}
+			const observer = new IntersectionObserver(handleIntersect, observerOptions);
 
 			contents.map(content => {
-				createObserver(content);
+				observer.observe(content);
 			});
+
+			return publicAPIs.observer = observer;
 		}
 
-		const determineActiveContent = function(contents) {
-			const windowTop = window.scrollY;
-
-			for (let i = 0; i < contents.length; i++) {
-				if (contents[i].offsetTop >= windowTop) {
-					return contents[i];
+		/**
+		* Handle Intersect
+		* Handle Magellan content when entering the viewport
+		*/
+		function handleIntersect(entries, observer) {
+			const activeContent = entries.find(entry => {
+				if(entry.intersectionRect.top <= settings.threshold) {
+					return entry;
 				}
-			}
+			});
 
-			return false;
+			if (!activeContent) return;
+
+			publicAPIs.deactivateAllLinks();
+			activateContentsLink(activeContent.target.id);
+
+			if (settings.updateHashOnScroll) {
+				updateHash(`#${activeContent.target.id}`);
+			}
 		}
 
-		const activateContentsLink = function(content) {
-			const contendID = content.getAttribute('id');
-			const activeItem = document.querySelector(`[href="#${contendID}"]`);
+		/**
+		* Activate Content Link
+		* Add active link class to the link tag the corresponds with the Megallan content passed
+		*/
+		const activateContentsLink = function(contentID) {
+			const activeItem = document.querySelector(`[href="#${contentID}"]`);
 
 			if (!activeItem) return;
 			activeItem.classList.add(settings.activeLinkClass);
@@ -86,19 +85,42 @@ export const Magellan = (function(contentSelector, linkSelector, options) {
 
 		// Public API
 		publicAPIs.deactivateAllLinks = function() {
-			const links = [...document.querySelectorAll(linkSelector)];
+			const links = [...document.querySelectorAll(linkSelector)]; //could be cached somewhere?
 			removeClassFromAll(links, settings.activeLinkClass);
 		}
 
 		publicAPIs.contentSelector = contentSelector; // Make option available for reinit
 
+		publicAPIs.handleClicks = function(animateScroll) {
+			if (animateScroll) {
+				this.handleClicks = new ScrollTo(linkSelector);
+			}
+		}
+
+		publicAPIs.destroy = function() {
+			// ScrollTo may not have been set on handleClicks, check before removing animated scroll
+			if ('destroy' in publicAPIs.handleClicks) {
+				publicAPIs.handleClicks.destroy();
+			}
+
+			if(publicAPIs.hasOwnProperty('observer')) {
+				publicAPIs.observer.disconnect();
+			}
+
+			publicAPIs.deactivateAllLinks();
+		}
+
 		publicAPIs.reinit = function() {
+			publicAPIs.destroy();
+
 			const contents = [...document.querySelectorAll(publicAPIs.contentSelector)];
 			runMagellan(contents);
 		}
 
 		publicAPIs.init = function(contentSelector, linkSelector, options) {
 			settings = extend(defaults, options || {});
+
+			publicAPIs.destroy();
 
 			const contents = [...document.querySelectorAll(contentSelector)];
 			const links    = [...document.querySelectorAll(linkSelector)];
@@ -109,7 +131,7 @@ export const Magellan = (function(contentSelector, linkSelector, options) {
 				runMagellan(contents);
 			});
 
-			const handleClicks = new ScrollTo(linkSelector);
+			publicAPIs.handleClicks(settings.animateScroll);
 		}
 
 		publicAPIs.init(contentSelector,linkSelector, options);
