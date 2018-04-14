@@ -42,7 +42,7 @@ const Magellan = (function(contentSelector, linkSelector, options) {
 
 			const observer = new IntersectionObserver(handleIntersect, observerOptions);
 
-			contents.map(content => {
+			contents.forEach(content => {
 				observer.observe(content);
 			});
 
