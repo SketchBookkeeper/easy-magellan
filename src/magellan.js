@@ -2,23 +2,21 @@
 // MAGELLAN NAV
 //--------------------------------------------------------------
 import {extend, removeClassFromAll, updateHash} from './utils';
-import {ScrollTo} from './scrollTo';
+
 
 /**
  * Magellan
  *
- * @param {String} contentSelector CSS class for Magellan content blocks
- * @param {String} linkSelector CSS class for Magellan links
- * @param {Function} onComplete
- * @param {Object} options
+ * @param {any} contentSelector
+ * @param {any} linkSelector
+ * @param {any} options
  * @returns null
  */
-export const Magellan = (function(contentSelector, linkSelector, options) {
+const Magellan = (function(contentSelector, linkSelector, options) {
 	let defaults = {
 		activeLinkClass: 'is-active',
 		threshold: 50,
 		updateHashOnScroll: true,
-		animateScroll: true,
 		intersectionObserverOptions : {
 			rootMargin: '0px',
 			root: null,
@@ -91,18 +89,7 @@ export const Magellan = (function(contentSelector, linkSelector, options) {
 
 		publicAPIs.contentSelector = contentSelector; // Make option available for reinit
 
-		publicAPIs.handleClicks = function(animateScroll) {
-			if (animateScroll) {
-				this.handleClicks = new ScrollTo(linkSelector);
-			}
-		}
-
 		publicAPIs.destroy = function() {
-			// ScrollTo may not have been set on handleClicks, check before removing animated scroll
-			if ('destroy' in publicAPIs.handleClicks) {
-				publicAPIs.handleClicks.destroy();
-			}
-
 			if(publicAPIs.hasOwnProperty('observer')) {
 				publicAPIs.observer.disconnect();
 			}
@@ -130,8 +117,6 @@ export const Magellan = (function(contentSelector, linkSelector, options) {
 			window.addEventListener('load', () => {
 				runMagellan(contents);
 			});
-
-			publicAPIs.handleClicks(settings.animateScroll);
 		}
 
 		publicAPIs.init(contentSelector,linkSelector, options);
@@ -141,3 +126,5 @@ export const Magellan = (function(contentSelector, linkSelector, options) {
 
 	return BuildMagellan;
 })(window, document);
+
+export {Magellan};
