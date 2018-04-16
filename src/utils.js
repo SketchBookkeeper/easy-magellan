@@ -32,7 +32,7 @@ export function debounce(func, wait = 20, immediate = true) {
  */
 export function extend() {
 	let extended = {};
-	let deep = false;
+	let deep = true;
 	let i = 0;
 
 	// Check if a deep merge
@@ -77,18 +77,4 @@ export function removeClassFromAll(items, className) {
 	for (let i = 0; i < items.length; i++) {
 		items[i].classList.remove(className);
 	}
-}
-
-/**
-* Update Hash without jumping to target
-*/
-export function updateHash(hash) {
-	if (typeof hash !== 'string') return;
-
-	if(!history.pushState) {
-		location.hash = hash;
-		return;
-	}
-
-	history.pushState(null, null, hash);
 }

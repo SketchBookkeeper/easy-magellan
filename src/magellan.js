@@ -3,7 +3,6 @@
 //--------------------------------------------------------------
 import {extend, removeClassFromAll, updateHash} from './utils';
 
-
 /**
  * Magellan
  *
@@ -16,7 +15,6 @@ const Magellan = (function(contentSelector, linkSelector, options) {
 	let defaults = {
 		activeLinkClass: 'is-active',
 		threshold: 50,
-		updateHashOnScroll: true,
 		intersectionObserverOptions : {
 			rootMargin: '0px',
 			root: null,
@@ -64,10 +62,6 @@ const Magellan = (function(contentSelector, linkSelector, options) {
 
 			publicAPIs.deactivateAllLinks();
 			activateContentsLink(activeContent.target.id);
-
-			if (settings.updateHashOnScroll) {
-				updateHash(`#${activeContent.target.id}`);
-			}
 		}
 
 		/**
