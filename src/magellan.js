@@ -1,7 +1,7 @@
 //--------------------------------------------------------------
 // MAGELLAN NAV
 //--------------------------------------------------------------
-import {extend, removeClassFromAll, updateHash} from './utils';
+import {extend, removeClassFromAll} from './utils';
 
 /**
  * Magellan
