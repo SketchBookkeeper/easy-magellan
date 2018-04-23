@@ -15,8 +15,8 @@ export const Magellan = (function(contentSelector, linkSelector, options) {
 	let defaults = {
 		activeLinkClass: 'is-active',
 		intersectionObserverOptions: {
-			rootMargin: '0px',
 			root: null,
+			rootMargin: '0px',
 			threshold: 1
 		},
 	}
