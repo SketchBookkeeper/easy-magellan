@@ -20,15 +20,15 @@ var myMagellan = new Magellan('.js-magellan-content', '.js-magellan-link', optio
 
 <main>
   <div id="one" class="some-content js-magellan-content">
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    <p>Content 1</p>
   </div>
 
   <div id="two" class="some-content js-magellan-content">
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    <p>Content 2</p>
   </div>
 
   <div id="three" class="some-content js-magellan-content">
-    <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.</p>
+    <p>Content 3</p>
   </div>
 </main>
 ```
